@@ -6,6 +6,7 @@ import {
   AlignmentType,
   Document,
   HeadingLevel,
+  ImageRun,
   Packer,
   Paragraph,
   Table,
@@ -14,11 +15,27 @@ import {
   TextRun,
   WidthType,
 } from 'docx';
+import utdegLogoUrl from '../assets/images/utdeg-logo.jpeg';
 
 const IncubadoraProposal = () => {
   const [expandedSections, setExpandedSections] = useState({});
   const [checkedItems, setCheckedItems] = useState({});
   const proposalRef = useRef(null);
+  const BRAND_PRIMARY = '#8d5732';
+  const BRAND_SECONDARY = '#f8a50a';
+
+  const hexToRgb = (hex) => {
+    const normalized = hex.replace('#', '').trim();
+    const full = normalized.length === 3
+      ? normalized.split('').map((c) => c + c).join('')
+      : normalized;
+    const num = parseInt(full, 16);
+    return {
+      r: (num >> 16) & 255,
+      g: (num >> 8) & 255,
+      b: num & 255,
+    };
+  };
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -32,6 +49,23 @@ const IncubadoraProposal = () => {
       ...prev,
       [item]: !prev[item]
     }));
+  };
+
+  const fetchAsUint8Array = async (url) => {
+    const res = await fetch(url);
+    const ab = await res.arrayBuffer();
+    return new Uint8Array(ab);
+  };
+
+  const fetchAsDataUrl = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(blob);
+    });
   };
 
   const downloadBlob = (blob, filename) => {
@@ -50,6 +84,7 @@ const IncubadoraProposal = () => {
     const org = 'Universidade Técnica Diogo Eugénio Guilande (UTDEG)';
     const program = 'Incubadora de Tecnologia e Inovação Digital (IT-UTDEG)';
     const date = 'Dezembro 2025';
+    const logoBytes = await fetchAsUint8Array(utdegLogoUrl);
 
     const h1 = (text) =>
       new Paragraph({ text, heading: HeadingLevel.HEADING_1, spacing: { after: 200 } });
@@ -92,22 +127,22 @@ const IncubadoraProposal = () => {
 
     const kpis1 = [
       ['Indicador', 'Meta (1 ciclo / 9M)', 'Método'],
-      ['Participantes formados', '70', 'Registos de conclusão'],
+      ['Participantes formados', '50', 'Registos de conclusão'],
       ['Taxa de conclusão', '≥80%', 'Concluem vs. iniciam'],
       ['Satisfação', '≥4.0/5.0', 'Questionários pós-programa'],
     ];
 
     const kpis2 = [
       ['Indicador', 'Meta (1 ciclo / 9M)', 'Método'],
-      ['Projetos incubados', '12 (6 diurno + 6 noturno)', 'Projetos aceites'],
+      ['Projetos incubados', '8 (4 diurno + 4 noturno)', 'Projetos aceites'],
       ['Startups constituídas', '3–5', 'Registos comerciais'],
-      ['MVPs funcionais', '12', 'Produtos demonstráveis'],
+      ['MVPs funcionais', '8', 'Produtos demonstráveis'],
     ];
 
     const kpis3 = [
       ['Indicador', 'Meta (1 ciclo / 9M)', 'Método'],
       ['Empregos criados', '25+', 'Contratos nas startups'],
-      ['Participantes empregados', '50+', 'Follow-up pós-programa'],
+      ['Participantes empregados', '30+', 'Follow-up pós-programa'],
       ['Investimento captado', '500k+ MZN', 'Contratos de investimento'],
     ];
 
@@ -131,6 +166,16 @@ const IncubadoraProposal = () => {
     const coverSection = {
       properties: {},
       children: [
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+          children: [
+            new ImageRun({
+              data: logoBytes,
+              transformation: { width: 120, height: 90 },
+            }),
+          ],
+        }),
         new Paragraph({
           children: [new TextRun({ text: org, bold: true })],
           alignment: AlignmentType.CENTER,
@@ -181,8 +226,9 @@ const IncubadoraProposal = () => {
       ),
       ...bullets([
         'Ciclo anual: Abril–Dezembro (9 meses) com 2 incubadores paralelos (diurno e noturno).',
-        'Capacidade: 70 participantes por ciclo (20 laboral, 20 pós-laboral, 30 externos — 15 diurno / 15 noturno).',
-        'Meta do ciclo: 12 MVPs (6 diurno + 6 noturno) e 3–5 startups (ou encaminhamento para estágios/emprego).',
+        'Capacidade: 50 participantes por ciclo (15 internos diurno, 15 internos noturno, 10 externos diurno, 10 externos noturno).',
+        'Meta do ciclo: 8 MVPs (4 diurno + 4 noturno) e 3–5 startups (ou encaminhamento para estágios/emprego).',
+        'Objetivo: unir excelência académica com aplicações reais de negócio (academia + mercado).',
         'Laptop pessoal recomendado para maximizar prática, trabalhos e colaboração.',
       ]),
       h3('Objetivo Geral'),
@@ -191,8 +237,9 @@ const IncubadoraProposal = () => {
       ),
       h3('Objetivos específicos'),
       ...bullets([
-        'Capacitar 70 participantes por ciclo em competências técnicas e empreendedoriais.',
-        'Incubar 12 projetos por ciclo (6 diurno + 6 noturno), com formação de equipas (5–6 membros).',
+        'Capacitar 50 participantes por ciclo em competências técnicas e empreendedoriais.',
+        'Incubar 8 projetos por ciclo (4 diurno + 4 noturno), com formação de equipas (5–6 membros).',
+        'Unir excelência académica com aplicações reais de negócio, aproximando sala de aula e mercado.',
         'Apoiar a criação/estruturação de 3–5 startups por ciclo (ou encaminhamento para oportunidades).',
         'Estabelecer parcerias estratégicas com 10+ empresas/organizações relevantes.',
       ]),
@@ -234,20 +281,22 @@ const IncubadoraProposal = () => {
       h3('Estrutura de promoções'),
       ...bullets([
         'Duração: 9 meses (3M pré-incubação + 6M incubação).',
-        'Turmas: laboral e pós-laboral, com o mesmo padrão de avaliação.',
-        'Tracks: Web Full-Stack, Mobile, IA/Dados e Fundamentos de Cloud.',
+        'Turmas: diurno e noturno, com o mesmo padrão de avaliação.',
+        'Tracks: Web Full-Stack, Mobile (React Native), IA/Dados e Fundamentos de Cloud.',
+        'Curso transversal: Fundamentos de Cibersegurança para todos os participantes.',
       ]),
       h3('Seleção e quotas (por ciclo)'),
       ...bullets([
-        '20 estudantes UTDEG (laboral).',
-        '20 estudantes UTDEG (pós-laboral).',
-        '30 externos (15 diurno + 15 noturno).',
+        '15 estudantes internos (diurno).',
+        '15 estudantes internos (noturno).',
+        '10 participantes externos (diurno).',
+        '10 participantes externos (noturno).',
       ]),
       p('Critérios de seleção: motivação, compromisso, disponibilidade e necessidades de nivelamento (Módulo Zero).'),
       h3('Fases do programa (entregáveis)'),
       ...bullets([
         'Seleção (semanas 1–4): divulgação, candidaturas, lista final + lista de espera.',
-        'Pré-incubação (3 meses): treinos/mentorias; pitch; seleção de 6+6 ideias; equipas 5–6 por projeto.',
+        'Pré-incubação (3 meses): treinos/mentorias; pitch; seleção de 4+4 ideias; equipas 5–6 por projeto.',
         'Incubação (6 meses): sprints, validação, iterações; MVP demonstrável; Demo Day; certificados.',
         'Pós-incubação: criação de startup, reconfiguração de equipas ou encaminhamento para estágios/emprego.',
       ]),
@@ -256,7 +305,7 @@ const IncubadoraProposal = () => {
       p('Calendário anual sugerido: execução do ciclo de Abril a Dezembro; preparação de Janeiro a Março.'),
       ...bullets([
         'Abr: seleção/onboarding + arranque da pré-incubação.',
-        'Abr–Jun: pré-incubação (formação, mentorias, pitch, seleção 6+6).',
+        'Abr–Jun: pré-incubação (formação, mentorias, pitch, seleção 4+4).',
         'Jul–Dez: incubação (execução, validação, construção do MVP).',
         'Dez: Demo Day + encerramento + follow-up.',
       ]),
@@ -282,6 +331,12 @@ const IncubadoraProposal = () => {
         'Eventos: talks, hackathons e demo days.',
         'Apoio em espécie: hardware, conectividade e créditos cloud.',
       ]),
+      h3('Estratégia de comunicação'),
+      ...bullets([
+        'Criar um website oficial da incubadora (programa, calendário Abril–Dezembro, candidaturas e resultados).',
+        'Alcançar o público-alvo via redes sociais (calls for applications, histórias de equipas, resultados e eventos).',
+        'Organizar sessões ao vivo (ex.: live coding, talks com mentores e demos de MVPs).',
+      ]),
 
       h2('9. Orçamento Base (baixo custo) e Sustentabilidade'),
       p('Orçamento enxuto orientado ao menor custo possível, com cofinanciamento via parcerias.'),
@@ -291,10 +346,9 @@ const IncubadoraProposal = () => {
 
       h2('10. Modelo de Receita e Acessibilidade'),
       ...bullets([
-        'Taxa simbólica por estudante (500–1.000 MZN/mês), com bolsas para casos sociais.',
-        'Patrocínio corporativo por track/turma.',
-        'Serviços de projeto e workshops pagos ao público externo.',
-        'Equity opcional (2–5%) em startups graduadas, mediante avaliação.',
+        'Receita principal: criação e implementação de cursos de curta duração em IT (alinhados às áreas da incubadora).',
+        'Exemplos: Web Full-Stack, Mobile (React Native), IA/Dados, Fundamentos de Cloud e Fundamentos de Cibersegurança.',
+        'Cofinanciamento via patrocínios/bolsas corporativas para garantir acessibilidade (quando aplicável).',
       ]),
 
       h2('11. Governança'),
@@ -317,6 +371,7 @@ const IncubadoraProposal = () => {
         'Estabelecer parcerias com empresas/organizações.',
         'Definir coordenação e facilitadores.',
         'Concluir currículos por track e calendário anual (Abr–Dez).',
+        'Implementar canais de comunicação (website, redes sociais e agenda de lives: live coding, talks e demos).',
         'Preparar formulário, critérios de seleção e datas de pitch/Demo Day.',
       ]),
     ];
@@ -338,8 +393,11 @@ const IncubadoraProposal = () => {
     downloadBlob(blob, 'Proposta_IT_UTDEG.docx');
   };
 
-  const generateFormalPdf = () => {
+  const generateFormalPdf = async () => {
+    const logoDataUrl = await fetchAsDataUrl(utdegLogoUrl);
     const doc = new jsPDF('p', 'mm', 'a4');
+    const primaryRgb = hexToRgb(BRAND_PRIMARY);
+    const secondaryRgb = hexToRgb(BRAND_SECONDARY);
     const left = 15;
     const right = 195;
     let y = 20;
@@ -347,13 +405,22 @@ const IncubadoraProposal = () => {
     const addHeader = () => {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('Universidade Técnica Diogo Eugénio Guilande (UTDEG)', left, 12);
+      const logoW = 10;
+      const logoH = 10;
+      doc.addImage(logoDataUrl, 'JPEG', left, 6, logoW, logoH);
+      const textLeft = left + logoW + 3;
+      doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+      doc.text('Universidade Técnica Diogo Eugénio Guilande (UTDEG)', textLeft, 12);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text('Proposta de Criação: Incubadora de Tecnologia e Inovação Digital', left, 17);
+      doc.setTextColor(60);
+      doc.text('Proposta de Criação: Incubadora de Tecnologia e Inovação Digital', textLeft, 17);
       const date = 'Dezembro 2025';
       doc.text(date, right, 12, { align: 'right' });
+      doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
       doc.line(left, 18, right, 18);
+      doc.setDrawColor(0);
+      doc.setTextColor(0);
     };
 
     const addFooter = () => {
@@ -417,14 +484,20 @@ const IncubadoraProposal = () => {
 
     // Cover
     addHeader();
+    const coverLogoW = 28;
+    const coverLogoH = 21;
+    doc.addImage(logoDataUrl, 'JPEG', (left + right - coverLogoW) / 2, y, coverLogoW, coverLogoH);
+    y += coverLogoH + 6;
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
     addTitle('Proposta de Projecto');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
+    doc.setTextColor(0);
     doc.text('Incubadora de Tecnologia e Inovação Digital (IT-UTDEG)', left, y);
     y += 12;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
-      addParagraph('Localização: Machava, Matola • Horizonte: 9 meses (3M pré + 6M inc.) • Calendário anual: Abril–Dezembro • Público-alvo: estudantes UTDEG (laboral e pós-laboral) e externos.');
+      addParagraph('Localização: Machava, Matola • Horizonte: 9 meses (3M pré + 6M inc.) • Calendário anual: Abril–Dezembro • Público-alvo: estudantes UTDEG (diurno e noturno) e externos.');
     y += 6;
     addFooter();
     newPage();
@@ -434,8 +507,9 @@ const IncubadoraProposal = () => {
     addParagraph('A UTDEG propõe a criação de uma incubadora académica de base tecnológica para formar competências práticas alinhadas ao mercado moçambicano e apoiar a criação de startups de impacto. O modelo privilegia custos baixos, inclusão (Módulo Zero) e parcerias locais.');
     addBullets([
       'Formação prática em Web Full-Stack, Mobile, Dados e Fundamentos de Cloud.',
+      'Curso transversal (para todos): Fundamentos de Cibersegurança.',
       'Mentoria por docentes e alumni; integração com desafios locais e eventos.',
-      'Meta (1 ciclo / 9 meses): 70 participantes formados, 12 MVPs (6 diurno + 6 noturno), 3–5 startups.',
+      'Meta (1 ciclo / 9 meses): 50 participantes formados, 8 MVPs (4 diurno + 4 noturno), 3–5 startups.',
       'Recomendação: candidatos são encorajados a possuir laptop pessoal para melhor aproveitar as sessões práticas e o trabalho em equipa.',
     ]);
 
@@ -453,17 +527,18 @@ const IncubadoraProposal = () => {
     addBullets([
       'Ciclo do programa: 9 meses (3M pré-incubação + 6M incubação).',
       'Calendário anual sugerido: Abril (início) a Dezembro (Demo Day e encerramento).',
-      'Seleção com quotas: 20 laboral, 20 pós-laboral, 30 externos (15 diurno / 15 noturno).',
-      'Turmas laboral e pós-laboral; metodologia baseada em projetos.',
+      'Seleção com quotas: 15 internos diurno, 15 internos noturno, 10 externos diurno, 10 externos noturno.',
+      'Turmas diurno e noturno; metodologia baseada em projetos.',
       'Módulo Zero (4–6 semanas) para iniciantes: alfabetização digital e fundamentos.',
+      'Curso transversal (para todos): Fundamentos de Cibersegurança.',
       'Laptop pessoal recomendado para maximizar produtividade (código, prática e colaboração).',
     ]);
 
     // Program phases
     addH2('4. Fases do Programa (9 meses)');
     addBullets([
-      'Fase 1 – Seleção: candidatura e seleção de participantes (laboral, pós-laboral e externos) de acordo com quotas definidas.',
-      'Fase 2 – Pré-incubação (3 meses): formações, mentorias e introdução a tecnologias (Web Full-Stack, Mobile, IA/Dados); apresentação de ideias; seleção das 6 melhores ideias no diurno e 6 no noturno; formação de grupos (5–6 membros).',
+      'Fase 1 – Seleção: candidatura e seleção de participantes (internos diurno, internos noturno, externos diurno e externos noturno) de acordo com quotas definidas.',
+      'Fase 2 – Pré-incubação (3 meses): formações, mentorias e introdução a tecnologias (Web Full-Stack, Mobile, IA/Dados); apresentação de ideias; seleção das 4 melhores ideias no diurno e 4 no noturno; formação de grupos (5–6 membros).',
       'Fase 3 – Incubação (6 meses): desenvolvimento dos MVPs com mentoria e acompanhamento; apresentação pública a startups e instituições; emissão de certificados de participação.',
       'Fase 4 – Pós-incubação/Follow-up: apoio à constituição de startups ou reconfiguração de equipas; encaminhamento para estágios/colocações.',
     ]);
@@ -482,7 +557,7 @@ const IncubadoraProposal = () => {
         title: '6. KPIs – Formação e Capacitação',
         head: [['Indicador', 'Meta (1 ciclo / 9M)', 'Método']],
         body: [
-          ['Participantes formados', '70', 'Registos de conclusão'],
+          ['Participantes formados', '50', 'Registos de conclusão'],
           ['Taxa de conclusão', '≥80%', 'Concluem vs. iniciam'],
           ['Satisfação', '≥4.0/5.0', 'Questionários pós-programa'],
         ],
@@ -491,9 +566,9 @@ const IncubadoraProposal = () => {
         title: '7. KPIs – Criação de Startups',
         head: [['Indicador', 'Meta (1 ciclo / 9M)', 'Método']],
         body: [
-          ['Projetos incubados', '12 (6 diurno + 6 noturno)', 'Projetos aceites'],
+          ['Projetos incubados', '8 (4 diurno + 4 noturno)', 'Projetos aceites'],
           ['Startups constituídas', '3–5', 'Registos comerciais'],
-          ['MVPs funcionais', '12', 'Produtos demonstráveis'],
+          ['MVPs funcionais', '8', 'Produtos demonstráveis'],
         ],
       },
       {
@@ -501,7 +576,7 @@ const IncubadoraProposal = () => {
         head: [['Indicador', 'Meta (1 ciclo / 9M)', 'Método']],
         body: [
           ['Empregos criados', '25+', 'Contratos nas startups'],
-          ['Participantes empregados', '50+', 'Follow-up pós-programa'],
+          ['Participantes empregados', '30+', 'Follow-up pós-programa'],
           ['Investimento captado', '500k+ MZN', 'Contratos de investimento'],
         ],
       },
@@ -524,7 +599,7 @@ const IncubadoraProposal = () => {
         body: t.body,
         startY: y,
         styles: { font: 'helvetica', fontSize: 10, cellPadding: 2 },
-        headStyles: { fillColor: [219, 234, 254], textColor: 20 },
+        headStyles: { fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b], textColor: 255 },
         margin: { left, right: 15 },
       });
       y = (doc.lastAutoTable?.finalY || y) + 8;
@@ -536,6 +611,7 @@ const IncubadoraProposal = () => {
       'Mapear e convidar startups de IT no país; firmar parcerias com empresas e ONGs.',
       'Reporte à Pró-Reitoria; Comité consultivo de 5 membros (2 docentes, 2 administrativos, 1 consultor externo).',
       'Eventos de ecossistema: talks, hackathons e demo days por promoção.',
+      'Estratégia de comunicação: website oficial da incubadora, divulgação em redes sociais e sessões ao vivo (live coding, talks, demos).',
     ]);
 
     // Lean budget table (lowest cost)
@@ -553,8 +629,8 @@ const IncubadoraProposal = () => {
       foot: [['Total estimado (1 ciclo / 9 meses)', '', '≈ 507k MZN']],
       startY: y,
       styles: { font: 'helvetica', fontSize: 10, cellPadding: 2 },
-      headStyles: { fillColor: [243, 244, 246], textColor: 20 },
-      footStyles: { fillColor: [226, 232, 240], textColor: 20, fontStyle: 'bold' },
+      headStyles: { fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b], textColor: 255 },
+      footStyles: { fillColor: [secondaryRgb.r, secondaryRgb.g, secondaryRgb.b], textColor: 20, fontStyle: 'bold' },
       margin: { left, right: 15 },
     });
     y = (doc.lastAutoTable?.finalY || y) + 8;
@@ -563,15 +639,15 @@ const IncubadoraProposal = () => {
     // Revenue model and accessibility
     addH2('12. Modelo de Receita e Acessibilidade');
     addBullets([
-      'Taxa simbólica por estudante (500–1.000 MZN/mês) com bolsas para casos sociais.',
-      'Patrocínio corporativo por track/turma e workshops curtos para público externo.',
-      'Equity opcional (2–5%) em startups graduadas, caso adequado.',
+      'Receita principal: criação e implementação de cursos de curta duração em IT (alinhados às áreas da incubadora).',
+      'Exemplos: Web Full-Stack, Mobile (React Native), IA/Dados, Fundamentos de Cloud e Fundamentos de Cibersegurança.',
+      'Acessibilidade: bolsas e patrocínios corporativos podem reduzir custos para participantes com limitações financeiras.',
     ]);
 
     // Risks
     addH2('13. Riscos e Mitigações');
     addBullets([
-      'Adesão irregular: oferta laboral e pós-laboral; Módulo Zero para nivelamento.',
+      'Adesão irregular: oferta diurna e noturna; Módulo Zero para nivelamento.',
       'Recursos limitados: foco em parcerias em espécie (hardware, cloud, mentoria).',
       'Qualidade técnica: currículos práticos, avaliação contínua e demo days.',
     ]);
@@ -586,8 +662,8 @@ const IncubadoraProposal = () => {
       title: '1. Sumário Executivo',
       content: (
         <div className="space-y-4">
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-            <h4 className="font-semibold text-blue-900 mb-2">Visão</h4>
+          <div className="bg-[#8d5732]/10 border-l-4 border-[#8d5732] p-4">
+            <h4 className="font-semibold text-[#8d5732] mb-2">Visão</h4>
             <p className="text-gray-700">Tornar a UTDEG o centro de referência nacional em formação de empreendedores tecnológicos, capacitando estudantes com competências práticas para o mercado de TIC e criando soluções inovadoras para os desafios moçambicanos.</p>
           </div>
 
@@ -619,8 +695,9 @@ const IncubadoraProposal = () => {
           <div>
             <h4 className="font-semibold mb-2">Objetivos Específicos</h4>
             <ul className="space-y-2 text-gray-700">
-              <li>• Capacitar 70 participantes (20 laboral, 20 pós-laboral, 30 externos) em competências técnicas e empreendedoriais por ciclo (9 meses)</li>
-              <li>• Incubar 12 projetos tecnológicos por ciclo (6 diurno + 6 noturno), com potencial de se tornarem startups viáveis</li>
+              <li>• Capacitar 50 participantes (15 internos diurno, 15 internos noturno, 10 externos diurno, 10 externos noturno) em competências técnicas e empreendedoriais por ciclo (9 meses)</li>
+              <li>• Incubar 8 projetos tecnológicos por ciclo (4 diurno + 4 noturno), com potencial de se tornarem startups viáveis</li>
+              <li>• Unir excelência académica com aplicações reais de negócio, aproximando sala de aula e mercado</li>
               <li>• Apoiar a criação/estruturação de 3–5 startups funcionais por ciclo (ou encaminhamento para estágios/emprego)</li>
               <li>• Estabelecer parcerias estratégicas com 10+ empresas de TIC e organizações relevantes</li>
               <li>• Posicionar a UTDEG como líder em inovação tecnológica no ensino superior moçambicano</li>
@@ -631,11 +708,11 @@ const IncubadoraProposal = () => {
             <h4 className="font-semibold mb-2">Impacto Esperado (1 ciclo / 9 meses)</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="bg-white p-3 rounded shadow-sm">
-                <div className="text-2xl font-bold text-green-600">70</div>
+                <div className="text-2xl font-bold text-green-600">50</div>
                 <div className="text-gray-600">Estudantes Formados</div>
               </div>
               <div className="bg-white p-3 rounded shadow-sm">
-                <div className="text-2xl font-bold text-green-600">12</div>
+                <div className="text-2xl font-bold text-green-600">8</div>
                 <div className="text-gray-600">Projetos Incubados</div>
               </div>
               <div className="bg-white p-3 rounded shadow-sm">
@@ -707,7 +784,7 @@ const IncubadoraProposal = () => {
               desde que demonstrem relevância local, viabilidade técnica e potencial de adoção.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="border-l-4 border-blue-500 pl-3">
+              <div className="border-l-4 border-[#8d5732] pl-3">
                 <h5 className="font-semibold text-sm">Fintech & Mobile Money</h5>
                 <p className="text-xs text-gray-600">Pagamentos digitais, literacia financeira, microcrédito</p>
               </div>
@@ -741,7 +818,7 @@ const IncubadoraProposal = () => {
       title: '3. Indicadores de Sucesso (KPIs)',
       content: (
         <div className="space-y-4">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+          <div className="bg-gradient-to-r from-[#8d5732]/10 to-[#f8a50a]/15 p-4 rounded-lg">
             <h4 className="font-semibold mb-2">Framework de Avaliação</h4>
             <p className="text-sm text-gray-700">Os KPIs estão organizados em 4 dimensões principais que refletem os objetivos da incubadora.</p>
           </div>
@@ -751,7 +828,7 @@ const IncubadoraProposal = () => {
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
               <li><strong>Cadência:</strong> monitoria mensal (presenças, entregáveis) e revisão por fase (pré/incubação)</li>
               <li><strong>Evidências:</strong> registos de presença, repositórios de código, demos, relatórios de mentoria e questionários</li>
-              <li><strong>Transparência:</strong> critérios publicados para progressão e seleção de projetos (6+6)</li>
+                <li><strong>Transparência:</strong> critérios publicados para progressão e seleção de projetos (4+4)</li>
             </ul>
           </div>
 
@@ -759,7 +836,7 @@ const IncubadoraProposal = () => {
             <h4 className="font-semibold mb-3">3.1 Dimensão 1: Formação e Capacitação</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm border text-gray-800">
-                <thead className="bg-blue-100">
+                <thead className="bg-[#8d5732]/15">
                   <tr>
                     <th className="border p-2 text-left">Indicador</th>
                     <th className="border p-2 text-center">Meta (1 ciclo / 9M)</th>
@@ -769,7 +846,7 @@ const IncubadoraProposal = () => {
                 <tbody>
                   <tr>
                     <td className="border p-2">Participantes formados</td>
-                    <td className="border p-2 text-center font-bold">70</td>
+                    <td className="border p-2 text-center font-bold">50</td>
                     <td className="border p-2">Registos de conclusão</td>
                   </tr>
                   <tr className="bg-gray-50">
@@ -801,7 +878,7 @@ const IncubadoraProposal = () => {
                 <tbody>
                   <tr>
                     <td className="border p-2">Projetos incubados</td>
-                    <td className="border p-2 text-center font-bold">12</td>
+                    <td className="border p-2 text-center font-bold">8</td>
                     <td className="border p-2">Projetos aceites</td>
                   </tr>
                   <tr className="bg-gray-50">
@@ -811,7 +888,7 @@ const IncubadoraProposal = () => {
                   </tr>
                   <tr>
                     <td className="border p-2">MVPs funcionais</td>
-                    <td className="border p-2 text-center font-bold">12</td>
+                    <td className="border p-2 text-center font-bold">8</td>
                     <td className="border p-2">Produtos demonstráveis</td>
                   </tr>
                 </tbody>
@@ -838,7 +915,7 @@ const IncubadoraProposal = () => {
                   </tr>
                   <tr className="bg-gray-50">
                     <td className="border p-2">Participantes empregados</td>
-                    <td className="border p-2 text-center font-bold">50+</td>
+                    <td className="border p-2 text-center font-bold">30+</td>
                     <td className="border p-2">Follow-up pós-programa</td>
                   </tr>
                   <tr>
@@ -890,10 +967,10 @@ const IncubadoraProposal = () => {
       title: '4. Modelo Operacional da Incubadora',
       content: (
         <div className="space-y-4 text-gray-700">
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+          <div className="bg-[#8d5732]/10 border-l-4 border-[#8d5732] p-3 rounded">
             <p className="text-sm">
               O programa funciona em <strong>2 incubadores paralelos</strong> (diurno e noturno), garantindo inclusão de
-              estudantes UTDEG (laboral e pós-laboral) e participação de interessados externos. Cada ciclo tem
+              estudantes UTDEG (diurno e noturno) e participação de interessados externos. Cada ciclo tem
               <strong> 9 meses</strong> e termina com apresentação pública de <strong>MVPs</strong>.
             </p>
           </div>
@@ -901,7 +978,7 @@ const IncubadoraProposal = () => {
             <h4 className="font-semibold mb-2">Estrutura de Promoções</h4>
             <ul className="space-y-3">
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">Duração e lógica do ciclo</div>
                   <p className="text-sm text-gray-600">
@@ -911,33 +988,43 @@ const IncubadoraProposal = () => {
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">Capacidade e composição da turma</div>
                   <p className="text-sm text-gray-600">
-                    70 participantes por ciclo: <strong>20 UTDEG (laboral)</strong>, <strong>20 UTDEG (pós-laboral)</strong>
-                    {' '}e <strong>30 externos</strong> (15 alocados ao diurno e 15 ao noturno). Esta estrutura garante
+                    50 participantes por ciclo: <strong>15 internos (diurno)</strong>, <strong>15 internos (noturno)</strong>
+                    {' '}e <strong>20 externos</strong> (10 alocados ao diurno e 10 ao noturno). Esta estrutura garante
                     diversidade e networking para o ecossistema local.
                   </p>
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">Tracks (componentes técnicas)</div>
                   <p className="text-sm text-gray-600">
                     Trilhas de aprendizagem e prática com entregáveis: <strong>Web Full-Stack</strong> (ex.: React, Node,
-                    bases de dados), <strong>Mobile</strong> (Android/Flutter), <strong>IA/Dados</strong> (ML básico,
+                    bases de dados), <strong>Mobile</strong> (React Native), <strong>IA/Dados</strong> (ML básico,
                     análise/visualização) e <strong>Fundamentos de Cloud</strong> (deploy, CI/CD, boas práticas).
                   </p>
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
+                <div>
+                  <div className="font-semibold">Curso transversal (para todos)</div>
+                  <p className="text-sm text-gray-600">
+                    <strong>Fundamentos de Cibersegurança</strong> para todos os participantes (boas práticas, proteção de dados,
+                    noções de risco, segurança em aplicações web/mobile e higiene digital).
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">Adequação a estudantes trabalhadores</div>
                   <p className="text-sm text-gray-600">
-                    Duas modalidades (laboral e pós-laboral) com horários compatíveis, mantendo o mesmo padrão de
+                    Duas modalidades (diurno e noturno) com horários compatíveis, mantendo o mesmo padrão de
                     avaliação e os mesmos checkpoints (demos, revisões e entregáveis).
                   </p>
                 </div>
@@ -958,9 +1045,10 @@ const IncubadoraProposal = () => {
               <div className="bg-gray-50 p-3 rounded border">
                 <h5 className="font-semibold text-sm mb-1">Quotas (por ciclo)</h5>
                 <ul className="list-disc pl-5 space-y-1 text-sm">
-                  <li>20 estudantes UTDEG (laboral)</li>
-                  <li>20 estudantes UTDEG (pós-laboral)</li>
-                  <li>30 externos (15 diurno + 15 noturno)</li>
+                  <li>15 estudantes internos (diurno)</li>
+                  <li>15 estudantes internos (noturno)</li>
+                  <li>10 externos (diurno)</li>
+                  <li>10 externos (noturno)</li>
                 </ul>
               </div>
               <div className="bg-gray-50 p-3 rounded border">
@@ -978,29 +1066,29 @@ const IncubadoraProposal = () => {
             <h4 className="font-semibold mb-2">Fases do Programa (9 meses)</h4>
             <ul className="space-y-3">
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">1) Seleção (semanas 1–4)</div>
                   <p className="text-sm text-gray-600">
-                    Divulgação, candidaturas e seleção final das 70 vagas por quota (UTDEG laboral, UTDEG pós-laboral e
-                    externos). Resultado: lista de selecionados, lista de espera e onboarding do programa.
+                    Divulgação, candidaturas e seleção final das 50 vagas por quota (internos diurno, internos noturno,
+                    externos diurno e externos noturno). Resultado: lista de selecionados, lista de espera e onboarding do programa.
                   </p>
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">2) Pré-incubação (3 meses)</div>
                   <p className="text-sm text-gray-600">
                     Formação intensiva (treinos, mentorias e palestras) com exposição a tecnologias <strong>Web Full‑Stack</strong>,
                     <strong> Mobile</strong> e <strong>IA/Dados</strong>. A fase termina com{' '}
-                    <strong>pitch de ideias</strong>: selecionam-se <strong>6 melhores ideias no diurno</strong> e{' '}
-                    <strong>6 no noturno</strong>, formando equipas de <strong>5–6 membros</strong> por projeto.
+                    <strong>pitch de ideias</strong>: selecionam-se <strong>4 melhores ideias no diurno</strong> e{' '}
+                    <strong>4 no noturno</strong>, formando equipas de <strong>5–6 membros</strong> por projeto.
                   </p>
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">3) Incubação (6 meses)</div>
                   <p className="text-sm text-gray-600">
@@ -1012,7 +1100,7 @@ const IncubadoraProposal = () => {
                 </div>
               </li>
               <li className="flex gap-2">
-                <span className="mt-1 text-blue-700">•</span>
+                <span className="mt-1 text-[#8d5732]">•</span>
                 <div>
                   <div className="font-semibold">4) Pós-incubação / Follow-up</div>
                   <p className="text-sm text-gray-600">
@@ -1063,14 +1151,14 @@ const IncubadoraProposal = () => {
             </p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
               <li><strong>Abril:</strong> seleção/onboarding + arranque da pré-incubação</li>
-              <li><strong>Abr–Jun:</strong> pré-incubação (treinos, mentorias, pitch e seleção de 6+6 ideias)</li>
+              <li><strong>Abr–Jun:</strong> pré-incubação (treinos, mentorias, pitch e seleção de 4+4 ideias)</li>
               <li><strong>Jul–Dez:</strong> incubação (sprints, validação, construção do MVP)</li>
               <li><strong>Dezembro:</strong> Demo Day + encerramento + encaminhamentos (follow-up)</li>
             </ul>
           </div>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Seleção (semanas 1–4)</strong>: divulgação, candidaturas e seleção das 70 vagas (20 laboral, 20 pós-laboral, 30 externos)</li>
-            <li><strong>Pré-incubação (meses 1–3)</strong>: formações e mentorias; apresentação de ideias; seleção de 6 melhores ideias (diurno) e 6 (noturno); formação de grupos (5–6)</li>
+            <li><strong>Seleção (semanas 1–4)</strong>: divulgação, candidaturas e seleção das 50 vagas (15 internos diurno, 15 internos noturno, 10 externos diurno, 10 externos noturno)</li>
+            <li><strong>Pré-incubação (meses 1–3)</strong>: formações e mentorias; apresentação de ideias; seleção de 4 melhores ideias (diurno) e 4 (noturno); formação de grupos (5–6)</li>
             <li><strong>Incubação (meses 4–9)</strong>: desenvolvimento dos MVPs com mentoria; validação e iteração; Demo Day/Apresentação pública no final do ciclo</li>
             <li><strong>Pós-incubação (contínuo)</strong>: encaminhamento para startups/estágios e apoio à constituição de empresas</li>
           </ul>
@@ -1164,6 +1252,18 @@ const IncubadoraProposal = () => {
               </ul>
             </div>
           </div>
+
+          <div className="bg-gray-50 p-4 rounded border">
+            <h5 className="font-semibold text-sm mb-1">Estratégia de Comunicação</h5>
+            <p className="text-sm text-gray-700 mb-2">
+              Para alcançar estudantes (UTDEG diurno/noturno) e público externo, a incubadora deve manter uma comunicação contínua e prática.
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>Criar um <strong>website</strong> oficial da incubadora (programa, calendário Abril–Dezembro, candidaturas e resultados)</li>
+              <li>Divulgar via <strong>redes sociais</strong> (calls for applications, histórias de equipas, resultados e eventos)</li>
+              <li>Realizar <strong>sessões ao vivo</strong> (ex.: live coding, talks com mentores, demos de MVPs)</li>
+            </ul>
+          </div>
         </div>
       )
     },
@@ -1223,7 +1323,7 @@ const IncubadoraProposal = () => {
               </tfoot>
             </table>
           </div>
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-3 text-sm">
+          <div className="bg-[#f8a50a]/10 border-l-4 border-[#f8a50a] p-3 text-sm">
             <p><strong>Nota:</strong> Evitar destacar o orçamento. Priorizar angariação de fundos através de parcerias (patrocínios, doações em espécie, bolsas corporativas). A universidade poderá cobrir custos por 1 ciclo (9 meses) enquanto a incubadora caminha para a autossustentabilidade.</p>
           </div>
         </div>
@@ -1239,11 +1339,9 @@ const IncubadoraProposal = () => {
             para participantes com limitações financeiras, mantendo o programa inclusivo.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Taxa simbólica por estudante (ex.: 500–1.000 MZN/mês), com bolsas para casos sociais</li>
-            <li>Patrocínio corporativo por track/turma</li>
-            <li>Serviços de projeto (projetos curtos para empresas locais)</li>
-            <li>Workshops pagos ao público externo (curta duração)</li>
-            <li>Equity opcional (2–5%) em startups graduadas, mediante avaliação</li>
+            <li><strong>Receita principal:</strong> criação e implementação de cursos de curta duração na área de IT, alinhados às áreas de interesse da incubadora</li>
+            <li><strong>Temas (exemplos):</strong> Web Full-Stack, Mobile (React Native), IA/Dados, Fundamentos de Cloud e Fundamentos de Cibersegurança</li>
+            <li><strong>Acessibilidade:</strong> bolsas e patrocínios corporativos para reduzir custos quando aplicável</li>
           </ul>
         </div>
       )
@@ -1282,7 +1380,7 @@ const IncubadoraProposal = () => {
             com foco em assiduidade, qualidade técnica e estabilidade operacional.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Adesão irregular</strong>: calendário flexível (laboral/pós-laboral) e Módulo Zero</li>
+            <li><strong>Adesão irregular</strong>: calendário flexível (diurno/noturno) e Módulo Zero</li>
             <li><strong>Recursos limitados</strong>: parcerias em espécie (cloud credits, mentoria, hardware)</li>
             <li><strong>Qualidade técnica</strong>: currículos práticos e mentoria próxima</li>
           </ul>
@@ -1321,6 +1419,7 @@ const IncubadoraProposal = () => {
             <li>Estabelecer parcerias com empresas e organizações em Moçambique</li>
             <li>Definir coordenação e equipa de facilitadores</li>
             <li>Concluir currículos por track e calendário anual (Abr–Dez)</li>
+            <li>Implementar canais de comunicação: website da incubadora, redes sociais e agenda de sessões ao vivo (live coding, talks, demos)</li>
           </ul>
           <div className="bg-gray-50 p-3 rounded border">
             <h5 className="font-semibold text-sm mb-1">Checklist mínimo antes de Abril</h5>
@@ -1329,6 +1428,7 @@ const IncubadoraProposal = () => {
               <li>Formulário de candidatura e critérios de seleção publicados</li>
               <li>Calendário do ciclo + datas de pitch e Demo Day</li>
               <li>Lista inicial de mentores/parceiros e agenda de palestras</li>
+              <li>Plano de comunicação (website + redes sociais + lives) e materiais de divulgação</li>
             </ul>
           </div>
         </div>
@@ -1338,13 +1438,22 @@ const IncubadoraProposal = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white" ref={proposalRef}>
-      <div className="mb-8 border-b-4 border-blue-600 pb-6">
-        <h1 className="text-4xl font-bold text-blue-900 mb-2">
-          Proposta de Projecto: Incubadora de Tecnologia e Inovação Digital
-        </h1>
-        <h2 className="text-2xl text-gray-700 mb-4">
-          Universidade Técnica Diogo Eugénio Guilande (UTDEG)
-        </h2>
+      <div className="mb-8 border-b-4 border-[#8d5732] pb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <img
+            src={utdegLogoUrl}
+            alt="UTDEG"
+            className="w-16 h-16 object-contain"
+          />
+          <div>
+            <h1 className="text-4xl font-bold text-[#8d5732] mb-2">
+              Proposta de Projecto: Incubadora de Tecnologia e Inovação Digital
+            </h1>
+            <h2 className="text-2xl text-gray-700">
+              Universidade Técnica Diogo Eugénio Guilande (UTDEG)
+            </h2>
+          </div>
+        </div>
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div>
             <p><strong>Localização:</strong> Machava, Matola</p>
@@ -1356,14 +1465,14 @@ const IncubadoraProposal = () => {
             <div className="flex items-center justify-end gap-2 mt-2">
               <button
                 onClick={generateFormalPdf}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 bg-[#8d5732] hover:bg-[#7a4b2b] text-white rounded transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Descarregar PDF
               </button>
               <button
                 onClick={generateDocx}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 bg-[#f8a50a] hover:bg-[#de9208] text-gray-900 rounded transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Descarregar DOCX
@@ -1396,8 +1505,8 @@ const IncubadoraProposal = () => {
         ))}
       </div>
 
-      <div className="mt-8 p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3">Próximos Passos</h3>
+      <div className="mt-8 p-6 bg-[#8d5732]/10 border-2 border-[#8d5732]/30 rounded-lg">
+        <h3 className="text-lg font-semibold text-[#8d5732] mb-3">Próximos Passos</h3>
         <ol className="space-y-2 text-sm text-gray-700">
           <li>1. Apresentação e aprovação pela Pró-Reitoria da UTDEG</li>
           <li>2. Alocação de orçamento e recursos iniciais</li>
