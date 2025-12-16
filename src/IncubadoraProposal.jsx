@@ -215,9 +215,9 @@ const IncubadoraProposal = () => {
     };
 
     const contentChildren = [
-      h1('Proposta completa (para impressão e partilha)'),
+      h1('Proposta de Projecto'),
       p(
-        'Este documento consolida a proposta da Incubadora de Tecnologia e Inovação Digital (IT-UTDEG), incluindo objetivos, modelo operacional, plano anual (Abril–Dezembro) e parâmetros de implementação.'
+        'O presente documento apresenta a proposta de criação da Incubadora de Tecnologia e Inovação Digital (IT-UTDEG), incluindo objetivos, modelo operacional, plano anual (Abril–Dezembro) e parâmetros de implementação.'
       ),
 
       h2('1. Sumário Executivo'),
